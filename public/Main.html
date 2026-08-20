@@ -12,42 +12,8 @@
 /* 테마 선적용 (FOUC 방지) */
 (function(){try{var t=localStorage.getItem('fpp_theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}})();
 </script>
-<script>
-/* ===== 에셋 로더: 상대경로 우선 → 실패 시 절대경로 재시도 (배포 경로 무관 동작) ===== */
-(function () {
-  var CSS = [['css/common.css', '/css/common.css'], ['css/Main.css', '/css/Main.css']];
-  var JS = [['js/Firebase.js', '/js/Firebase.js'], ['js/common.js', '/js/common.js'], ['js/Main.js', '/js/Main.js']];
-  function warn() {
-    if (document.getElementById('fppAssetWarn')) return;
-    var d = document.createElement('div');
-    d.id = 'fppAssetWarn';
-    d.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:#e8484f;color:#fff;font:700 13px/1.5 sans-serif;padding:10px 14px;text-align:center';
-    d.textContent = '스타일/스크립트를 불러오지 못했습니다. 새로고침 해주세요.';
-    (document.body || document.documentElement).appendChild(d);
-    setTimeout(function () { d.remove(); }, 6000);
-  }
-  function loadCss(cands, i) {
-    if (i >= cands.length) { warn(); return; }
-    var l = document.createElement('link');
-    l.rel = 'stylesheet'; l.href = cands[i];
-    l.onload = function () { };
-    l.onerror = function () { loadCss(cands, i + 1); };
-    document.head.appendChild(l);
-  }
-  function loadJs(cands, i, next) {
-    if (i >= cands.length) { warn(); return; }
-    var s = document.createElement('script');
-    s.src = cands[i];
-    s.onload = function () { next && next(); };
-    s.onerror = function () { loadJs(cands, i + 1, next); };
-    (document.body || document.head).appendChild(s);
-  }
-  CSS.forEach(function (c) { loadCss(c, 0); });
-  function chain(k) { if (k < JS.length) loadJs(JS[k], 0, function () { chain(k + 1); }); }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { chain(0); });
-  else chain(0);
-})();
-</script>
+<link rel="stylesheet" href="css/common.css" />
+<link rel="stylesheet" href="css/Main.css" />
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
@@ -186,6 +152,8 @@
 <div id="popupRoot"></div>
 <div id="toastRoot" aria-live="polite"></div>
 
-<!-- 로컬 JS는 헤드 에셋 로더가 순차 주입합니다 (Firebase → common → Main) -->
+<script src="js/Firebase.js"></script>
+<script src="js/common.js"></script>
+<script src="js/Main.js"></script>
 </body>
 </html>
