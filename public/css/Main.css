@@ -1,0 +1,164 @@
+/* ============================================================
+   FPP v2 — Main.css (홈 / 캐릭터 / PvP 패치)
+   ============================================================ */
+.page[hidden]{display:none}
+
+/* ===== 홈 티커 ===== */
+.ticker{
+  border-bottom:1px solid var(--line);background:color-mix(in srgb,var(--surface) 60%,transparent);
+  overflow:hidden;padding:9px 0;position:relative;
+}
+.tk-track{display:flex;gap:0;width:max-content;animation:tkMove 38s linear infinite}
+.ticker:hover .tk-track{animation-play-state:paused}
+@keyframes tkMove{to{transform:translateX(-50%)}}
+.tk-item{display:inline-flex;align-items:center;gap:8px;padding:0 22px;font-size:12.5px;font-weight:700;color:var(--text-2);white-space:nowrap}
+.tk-item b{font-family:var(--font-d);color:var(--gold);font-size:12px;letter-spacing:.5px}
+.tk-item i{color:var(--gold);font-style:normal;font-size:10px;opacity:.7}
+
+/* ===== 홈 2×2 그리드 ===== */
+.home-grid{display:grid;grid-template-columns:1fr;gap:18px;margin-top:22px}
+@media (min-width:768px){
+  .home-grid{grid-template-columns:1fr 1fr;grid-auto-rows:1fr;margin-top:26px}
+  /* 이벤트가 없을 때: 패치노트 Box가 이벤트 영역까지 확장 (§16) */
+  .home-grid.no-event .box--patchnote{grid-row:span 2}
+}
+@media (max-width:767px){
+  /* SM/XS: 이벤트 Box만 숨기고 패치노트 Box는 확장하지 않음 (§16) */
+  .home-grid.no-event .box--event{display:none}
+}
+
+/* ===== PvP 오브 (홈 Box) ===== */
+.pvp-orbs{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:14px 12px}
+@media (max-width:767px){.pvp-orbs .orb:nth-child(n+9){display:none}} /* SM/XS: 4×2 = 최대 8개 */
+.orb{display:flex;flex-direction:column;align-items:center;gap:7px;padding:6px 2px;cursor:pointer;position:relative;transition:transform .25s var(--ease)}
+.orb:hover{transform:translateY(-4px)}
+.orb-img{
+  width:clamp(52px,7vw,76px);aspect-ratio:1;border-radius:50%;overflow:hidden;position:relative;
+  border:2px solid var(--line-2);background:linear-gradient(150deg,var(--surface-2),var(--surface-3));
+  transition:border-color .25s;
+}
+.orb:hover .orb-img{border-color:var(--gold)}
+.orb-img img{width:100%;height:100%;object-fit:cover}
+.orb-badge{position:absolute;right:-7px;bottom:-5px;font-size:9.5px;padding:2px 7px;box-shadow:0 3px 10px rgba(0,0,0,.35);z-index:2}
+.orb-name{font-size:11.5px;font-weight:800;color:var(--text-2);max-width:86px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* ===== 이벤트 롤링 ===== */
+.roll{position:relative;min-height:130px;padding:0}
+.roll-card{
+  position:absolute;inset:10px 12px 26px;border-radius:var(--r-md);overflow:hidden;
+  opacity:0;transform:scale(.97);transition:opacity .7s ease,transform .7s var(--ease);
+  background:linear-gradient(140deg,var(--surface-2),var(--surface-3));display:block;width:auto;text-align:left;
+}
+.roll-card img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.roll-card.on{opacity:1;transform:none;z-index:1}
+.roll-scrim{
+  position:absolute;left:0;right:0;bottom:0;padding:26px 14px 12px;z-index:2;
+  background:linear-gradient(180deg,transparent,rgba(4,12,22,.85));
+  display:flex;flex-direction:column;gap:2px;
+}
+.roll-scrim strong{font-family:var(--font-d);font-size:17px;color:#fff;letter-spacing:.4px}
+.roll-scrim span{font-size:11.5px;color:rgba(255,255,255,.75);font-weight:700}
+.roll-dots{position:absolute;left:0;right:0;bottom:7px;display:flex;gap:6px;justify-content:center;z-index:3}
+.roll-dots button{width:7px;height:7px;border-radius:99px;background:var(--text-3);opacity:.45;padding:0;transition:.3s}
+.roll-dots button.on{opacity:1;background:var(--gold);width:18px}
+
+/* ===== 캐릭터 탭 ===== */
+.char-tabs{display:flex;gap:8px;margin-top:22px;border-bottom:1px solid var(--line)}
+.char-tab{
+  padding:13px 22px;font-family:var(--font-d);font-size:17px;color:var(--text-3);position:relative;
+  letter-spacing:.4px;min-height:48px;transition:color .2s;
+}
+.char-tab.is-on{color:var(--gold)}
+.char-tab.is-on::after{content:"";position:absolute;left:10px;right:10px;bottom:-1px;height:3px;background:var(--gold)}
+.char-tab:hover{color:var(--text-2)}
+
+/* ===== 캐릭터 필터 ===== */
+.char-filters{margin-top:16px;display:flex;flex-direction:column;gap:10px}
+.cf-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+@media (min-width:768px){
+  .cf-row:first-child{flex-wrap:nowrap}
+  .cf-sel{flex:1}
+}
+.cf-sel{position:relative;flex:1;min-width:110px}
+.cf-sel span{position:absolute;top:-7px;left:10px;font-size:10px;font-weight:900;color:var(--text-3);background:var(--bg);padding:0 5px;letter-spacing:.4px;z-index:1}
+.cf-sel select{min-height:44px;font-size:13px;font-weight:800;padding:10px 12px}
+.cf-fav.is-on{background:color-mix(in srgb,var(--gold) 16%,transparent);border-color:var(--gold);color:var(--gold)}
+.cf-search{position:relative;flex:1;min-width:160px}
+.cf-search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-3)}
+.cf-search input{padding-left:36px;min-height:44px}
+
+/* ===== 캐릭터 그리드 (XS4 / SM6 / MD7 / LG8) ===== */
+.char-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:18px 0 30px}
+@media (min-width:420px){.char-grid{grid-template-columns:repeat(4,1fr);gap:12px}}
+@media (min-width:560px){.char-grid{grid-template-columns:repeat(6,1fr)}}
+@media (min-width:768px){.char-grid{grid-template-columns:repeat(7,1fr)}}
+@media (min-width:1080px){.char-grid{grid-template-columns:repeat(8,1fr)}}
+.char-card{
+  position:relative;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);
+  padding:10px 6px 12px;cursor:pointer;text-align:center;overflow:hidden;
+  transition:transform .28s var(--ease),border-color .28s,box-shadow .28s;
+}
+.char-card:hover{transform:translateY(-5px);border-color:var(--gold);box-shadow:0 12px 26px rgba(2,10,20,.4)}
+.char-fav{
+  position:absolute;top:5px;right:5px;z-index:2;width:32px;height:32px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;color:var(--text-3);transition:.2s;background:color-mix(in srgb,var(--bg) 55%,transparent);
+}
+.char-fav svg{width:16px;height:16px}
+.char-fav:hover{color:var(--gold);transform:scale(1.15)}
+.char-fav.on{color:var(--gold)}
+.char-img{aspect-ratio:1;border-radius:50%;overflow:hidden;margin:6px auto 0;width:78%;max-width:92px;
+  border:2px solid var(--line-2);background:linear-gradient(150deg,var(--surface-2),var(--surface-3));transition:border-color .25s}
+.char-card:hover .char-img{border-color:var(--gold)}
+.char-img img{width:100%;height:100%;object-fit:cover}
+.char-tx{margin-top:9px}
+.char-tx b{display:block;font-size:12px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.char-badges{display:flex;gap:4px;justify-content:center;flex-wrap:wrap;margin-top:5px}
+.char-badges em{font-style:normal;font-size:9.5px;padding:2px 7px}
+
+/* ===== 캐릭터 상세 모달 ===== */
+.cd-top{display:flex;gap:16px;align-items:flex-start}
+.cd-img{flex:none;width:110px;height:110px;border-radius:50%;overflow:hidden;border:3px solid var(--gold);box-shadow:0 8px 22px color-mix(in srgb,var(--gold) 26%,transparent)}
+.cd-img img{width:100%;height:100%;object-fit:cover}
+.cd-id{flex:1;display:flex;flex-direction:column;gap:9px;align-items:flex-start}
+.cd-id .char-badges{justify-content:flex-start;margin-top:0}
+.cd-desc{font-size:13px;color:var(--text-2);line-height:1.65}
+.cd-sec{margin-top:18px;border-top:1px solid var(--line);padding-top:14px}
+.cd-sec h4{font-family:var(--font-d);font-size:15.5px;color:var(--gold);margin-bottom:9px;letter-spacing:.4px}
+.cd-list{list-style:none;display:flex;flex-direction:column;gap:8px}
+.cd-list li{background:var(--surface-2);border-radius:var(--r-sm);padding:10px 12px}
+.cd-list b{font-size:13.5px;display:block}
+.cd-list small{font-size:12px;color:var(--text-2);line-height:1.6}
+.cd-patches{list-style:none;display:flex;flex-direction:column;gap:7px}
+.cd-patch{display:flex;align-items:flex-start;gap:9px;font-size:13px;padding:9px 11px;background:var(--surface-2);border-radius:var(--r-sm);border-left:3px solid transparent}
+.cd-patch time{margin-left:auto;flex:none;font-size:11px;color:var(--text-3);padding-top:2px}
+.cd-patch-tx{flex:1;line-height:1.55}
+.cd-patch.hl{border-left-color:var(--gold);background:color-mix(in srgb,var(--gold) 10%,var(--surface-2))}
+
+/* ===== PvP 페이지 ===== */
+.pvp-cols{display:flex;flex-direction:column;gap:18px;margin-top:24px}
+@media (min-width:768px){.pvp-cols{flex-direction:row;align-items:flex-start}}
+.pvp-col{flex:1;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden;min-width:0}
+.pvp-col-title{
+  display:flex;align-items:center;gap:9px;padding:15px 16px;font-family:var(--font-d);font-size:18px;
+  letter-spacing:.5px;border-bottom:1px solid var(--line);
+}
+.pvp-col--buff .pvp-col-title{color:var(--green)}
+.pvp-col--nerf .pvp-col-title{color:var(--red)}
+.pvp-col--fix .pvp-col-title{color:var(--gold)}
+.pvp-col-body{padding:12px;display:flex;flex-direction:column;gap:12px}
+.pvp-group{
+  border:1px solid var(--line);border-radius:var(--r-md);overflow:hidden;background:var(--surface-2);
+  cursor:pointer;transition:transform .25s var(--ease),border-color .25s;
+}
+.pvp-group:hover{transform:translateY(-3px);border-color:var(--line-2)}
+.pvp-gh{display:flex;align-items:center;gap:11px;padding:12px}
+.pvp-ava{flex:none;width:52px;height:52px;border-radius:50%;overflow:hidden;border:2px solid var(--line-2);background:var(--surface-3)}
+.pvp-ava img{width:100%;height:100%;object-fit:cover}
+.pvp-gt{flex:1;min-width:0}
+.pvp-gt b{display:block;font-size:14.5px;font-weight:900}
+.pvp-gt time{font-size:11px;color:var(--text-3)}
+.pvp-more{color:var(--text-3);font-size:20px;transition:.2s}
+.pvp-group:hover .pvp-more{color:var(--gold);transform:translateX(3px)}
+.pvp-items{list-style:none;border-top:1px solid var(--line);padding:10px 14px;display:flex;flex-direction:column;gap:6px}
+.pvp-items li{font-size:12.5px;color:var(--text-2);padding-left:14px;position:relative;line-height:1.55}
+.pvp-items li::before{content:"";position:absolute;left:0;top:8px;width:5px;height:5px;border-radius:50%;background:var(--gold)}

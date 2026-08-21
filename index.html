@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>FPP v2 — 원피스 파이팅패스 커뮤니티</title>
+<meta name="description" content="FPP v2 — 캐릭터 DB, PvP 패치, 패치노트, 이벤트, 커뮤니티를 한 곳에서." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet" />
+<script>
+/* 테마 선적용 (FOUC 방지) */
+(function(){try{var t=localStorage.getItem('fpp_theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}})();
+</script>
+<script>
+/* ===== 에셋 로더: 상대경로 우선 → 실패 시 절대경로 재시도 (배포 경로 무관 동작) ===== */
+(function () {
+  var CSS = [['css/common.css', '/css/common.css'], ['css/Main.css', '/css/Main.css']];
+  var JS = [['js/Firebase.js', '/js/Firebase.js'], ['js/common.js', '/js/common.js'], ['js/Main.js', '/js/Main.js']];
+  function warn() {
+    if (document.getElementById('fppAssetWarn')) return;
+    var d = document.createElement('div');
+    d.id = 'fppAssetWarn';
+    d.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:#e8484f;color:#fff;font:700 13px/1.5 sans-serif;padding:10px 14px;text-align:center';
+    d.textContent = '스타일/스크립트를 불러오지 못했습니다. 새로고침 해주세요.';
+    (document.body || document.documentElement).appendChild(d);
+    setTimeout(function () { d.remove(); }, 6000);
+  }
+  function loadCss(cands, i) {
+    if (i >= cands.length) { warn(); return; }
+    var l = document.createElement('link');
+    l.rel = 'stylesheet'; l.href = cands[i];
+    l.onload = function () { };
+    l.onerror = function () { loadCss(cands, i + 1); };
+    document.head.appendChild(l);
+  }
+  function loadJs(cands, i, next) {
+    if (i >= cands.length) { warn(); return; }
+    var s = document.createElement('script');
+    s.src = cands[i];
+    s.onload = function () { next && next(); };
+    s.onerror = function () { loadJs(cands, i + 1, next); };
+    (document.body || document.head).appendChild(s);
+  }
+  CSS.forEach(function (c) { loadCss(c, 0); });
+  function chain(k) { if (k < JS.length) loadJs(JS[k], 0, function () { chain(k + 1); }); }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { chain(0); });
+  else chain(0);
+})();
+</script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+</head>
+<body data-page="main">
+
+<div class="ambient" aria-hidden="true"></div>
+
+<!-- ===== 공통 헤더 (common.js 렌더) ===== -->
+<header id="appHeader" class="app-header"></header>
+<nav id="desktopNav" class="desk-nav" aria-label="주 메뉴"></nav>
+
+<!-- ===== 모바일 드로어 ===== -->
+<div class="drawer-backdrop" id="drawerBackdrop" hidden></div>
+<aside class="drawer" id="navDrawer" aria-label="전체 메뉴" aria-hidden="true"></aside>
+
+<main id="view">
+
+  <!-- ================= HOME ================= -->
+  <section class="page" id="view-home" hidden>
+    <div class="banner banner--home" id="homeBanner" aria-label="홈 배너">
+      <div class="banner-fallback" aria-hidden="true"></div>
+      <div class="banner-media" id="homeBannerMedia"></div>
+      <div class="banner-dots" id="homeBannerDots"></div>
+    </div>
+    <div class="ticker" id="homeTicker" aria-hidden="true"></div>
+
+    <div class="wrap home-grid" id="homeGrid">
+      <!-- 패치노트 Box -->
+      <article class="box box--patchnote rv" id="boxPatchnote">
+        <div class="box-head">
+          <h2 class="box-title" data-i18n="patchnote">패치노트</h2>
+          <a class="box-go" href="Community.html#patch" data-i18n="shortcut">바로가기</a>
+        </div>
+        <div class="box-body" id="homePatchList"></div>
+      </article>
+
+      <!-- PvP 패치 Box -->
+      <article class="box box--pvp rv" id="boxPvp">
+        <div class="box-head">
+          <h2 class="box-title">PvP 패치</h2>
+          <button class="box-go" type="button" id="goPvpPage" data-i18n="shortcut">바로가기</button>
+        </div>
+        <div class="box-body pvp-orbs" id="homePvpGrid"></div>
+      </article>
+
+      <!-- 이벤트 Box (진행 중 이벤트 없으면 숨김) -->
+      <article class="box box--event rv" id="boxEvent">
+        <div class="box-head">
+          <h2 class="box-title" data-i18n="event">이벤트</h2>
+          <a class="box-go" href="Community.html#event" data-i18n="shortcut">바로가기</a>
+        </div>
+        <div class="box-body roll" id="homeEventRoll"></div>
+      </article>
+
+      <!-- 커뮤니티 Box -->
+      <article class="box box--board rv" id="boxBoard">
+        <div class="box-head">
+          <h2 class="box-title" data-i18n="community">커뮤니티</h2>
+          <a class="box-go" href="Community.html#board" data-i18n="shortcut">바로가기</a>
+        </div>
+        <div class="box-body" id="homeBoardList"></div>
+      </article>
+    </div>
+  </section>
+
+  <!-- ================= CHARACTERS ================= -->
+  <section class="page" id="view-characters" hidden>
+    <div class="banner banner--page" aria-label="캐릭터 배너">
+      <div class="banner-fallback" aria-hidden="true"></div>
+      <div class="banner-media" id="charBannerMedia"></div>
+    </div>
+    <div class="wrap">
+      <div class="char-tabs rv" role="tablist" aria-label="캐릭터 탭">
+        <button class="char-tab is-on" id="charTabChar" type="button" role="tab" aria-selected="true" data-i18n="characters">캐릭터</button>
+        <button class="char-tab" id="charTabSupport" type="button" role="tab" aria-selected="false">현질 서폿 캐릭터</button>
+      </div>
+
+      <div class="char-filters rv" aria-label="캐릭터 필터">
+        <div class="cf-row">
+          <label class="cf-sel"><span>등급</span><select id="fGrade" aria-label="등급 필터"></select></label>
+          <label class="cf-sel"><span>속성</span><select id="fAttr" aria-label="속성 필터"></select></label>
+          <label class="cf-sel"><span>타입</span><select id="fType" aria-label="타입 필터"></select></label>
+          <label class="cf-sel"><span>정렬</span><select id="fSort" aria-label="정렬"></select></label>
+        </div>
+        <div class="cf-row">
+          <button class="btn btn--ghost btn--sm cf-fav" id="fFav" type="button" aria-pressed="false">★ 즐겨찾기</button>
+          <label class="cf-search"><span class="sr-only">검색</span>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21" stroke-linecap="round"/></svg>
+            <input id="fSearch" type="search" placeholder="캐릭터 검색" aria-label="캐릭터 검색" />
+          </label>
+          <button class="btn btn--ghost btn--sm" id="fRefresh" type="button" aria-label="필터 새로고침">↺ 새로고침</button>
+        </div>
+      </div>
+
+      <div class="char-grid" id="charGrid"></div>
+    </div>
+  </section>
+
+  <!-- ================= PVP ================= -->
+  <section class="page" id="view-pvp" hidden>
+    <div class="banner banner--page" aria-label="PvP 패치 배너">
+      <div class="banner-fallback" aria-hidden="true"></div>
+      <div class="banner-media" id="pvpBannerMedia"></div>
+    </div>
+    <div class="wrap">
+      <div class="pvp-cols rv">
+        <section class="pvp-col pvp-col--buff" aria-label="버프">
+          <h2 class="pvp-col-title"><span class="badge badge--buff">버프</span> Buff</h2>
+          <div class="pvp-col-body" id="buffCol"></div>
+        </section>
+        <section class="pvp-col pvp-col--nerf" aria-label="너프">
+          <h2 class="pvp-col-title"><span class="badge badge--nerf">너프</span> Nerf</h2>
+          <div class="pvp-col-body" id="nerfCol"></div>
+        </section>
+        <section class="pvp-col pvp-col--fix" aria-label="기능수정">
+          <h2 class="pvp-col-title"><span class="badge badge--fix">기능수정</span> Fix</h2>
+          <div class="pvp-col-body" id="fixCol"></div>
+        </section>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="app-footer">
+  <div class="wrap foot-in">
+    <span class="foot-logo">FPP</span>
+    <p>FPP v2 — 팬 커뮤니티 · 본 사이트는 비공식 팬 프로젝트입니다.</p>
+    <p class="foot-sub">데이터는 기존 Firebase 프로젝트(fighting-path-patch)에서 실시간으로 불러옵니다.</p>
+  </div>
+</footer>
+
+<!-- 하단 탭 (SM/XS, common.js 렌더) -->
+<nav id="bottomTabs" class="bottom-tabs" aria-label="하단 메뉴"></nav>
+
+<div id="popupRoot"></div>
+<div id="toastRoot" aria-live="polite"></div>
+
+<!-- 로컬 JS는 헤드 에셋 로더가 순차 주입합니다 (Firebase → common → Main) -->
+</body>
+</html>
