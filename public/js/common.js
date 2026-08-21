@@ -49,6 +49,47 @@
   ];
   var PLACEHOLDER_IMG = AVATARS[0];
 
+  /* ============================================================
+     페이지 전용 배너 (§20/24/28/29/31/34/37)
+     Firebase banners에 page 구분이 없는 경우 홈 배너로 폴백하지 않고
+     각 페이지의 자체 배너를 사용한다.
+     - 캐릭터 / 패치노트 / 게시판 / 이벤트 → 캐릭터 배너 (동일 배너 사용 규정)
+     - PvP 패치 / 커뮤니티 홈 / 고객센터 → 각각 자체 배너
+     ============================================================ */
+  var PAGE_BANNERS = {
+    characters: {
+      image: 'https://image.qwenlm.ai/generated-images/987f7614-9aa7-4d15-8615-e46b88e3b65b/_result.png',
+      title: '캐릭터', tag: 'CHARACTER ARCHIVE', cls: 'banner-fallback--char'
+    },
+    pvp: {
+      image: 'https://image.qwenlm.ai/generated-images/f6395166-19bd-4970-8d7b-b86ac14dc624/_result.png',
+      title: 'PvP 패치', tag: 'BALANCE UPDATE', cls: 'banner-fallback--pvp'
+    },
+    community: {
+      image: 'https://image.qwenlm.ai/generated-images/6675fceb-63e6-4e40-830f-3de5669b163a/_result.png',
+      title: '커뮤니티', tag: 'CREW BOARD', cls: 'banner-fallback--community'
+    },
+    cs: {
+      image: 'https://image.qwenlm.ai/generated-images/1f2f41ad-4373-4c23-a185-5a2b8a6bd506/_result.png',
+      title: '고객센터', tag: 'HELP CENTER', cls: 'banner-fallback--cs'
+    }
+  };
+
+  /* 페이지 전용 배너 적용 — Firebase에 해당 page 배너가 있으면 우선, 없으면 자체 배너 */
+  function fillPageBanner(mediaEl, key, fbBanners) {
+    if (!mediaEl) return;
+    var def = PAGE_BANNERS[key];
+    var local = fbBanners || [];
+    var found = local.filter(function (b) {
+      var p = String(b.page || b.type || b.location || '').toLowerCase();
+      return p && p.indexOf(key === 'characters' ? 'char' : key) > -1;
+    });
+    var items = found.length ? found : [def];
+    var fb = mediaEl.parentElement && mediaEl.parentElement.querySelector('.banner-fallback');
+    if (fb && def.cls) fb.classList.add(def.cls);
+    fillBanner(mediaEl, null, items, null);
+  }
+
   /* ================= i18n ================= */
   var DICT = {
     ko: { home: '홈', characters: '캐릭터', pvpPatch: 'PvP 패치', community: '커뮤니티', customerService: '고객센터', patchnote: '패치노트', shortcut: '바로가기', login: '로그인', signup: '회원가입', logout: '로그아웃', settings: '설정', favorites: '즐겨찾기', comHome: '커뮤니티 홈', board: '게시판', event: '이벤트', mainHome: '메인 홈' },
@@ -768,7 +809,7 @@
     toast: toast, openModal: openModal, popup: popup, closeAllPopups: closeAllPopups,
     watchReveals: watchReveals,
     skelRows: skelRows, skelCards: skelCards, skelGrid: skelGrid, empty: empty,
-    fillBanner: fillBanner, ticker: ticker, share: share,
+    fillBanner: fillBanner, fillPageBanner: fillPageBanner, PAGE_BANNERS: PAGE_BANNERS, ticker: ticker, share: share,
     avatarOf: avatarOf, AVATARS: AVATARS,
     currentUser: function () { return currentUser; },
     userDoc: function () { return userDoc; },
